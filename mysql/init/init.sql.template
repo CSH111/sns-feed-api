@@ -1,0 +1,15 @@
+-- Create user and grant necessary privileges for Prisma operations
+-- Including shadow database access
+
+-- Create user
+CREATE USER IF NOT EXISTS '${DB_USER}'@'%' IDENTIFIED BY '${DB_PASSWORD}';
+
+-- Global privileges needed for Prisma shadow databases
+GRANT CREATE, DROP ON *.* TO '${DB_USER}'@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, INDEX, REFERENCES ON *.* TO '${DB_USER}'@'%';
+
+-- Apply changes
+FLUSH PRIVILEGES;
+
+-- Show granted privileges (for debugging)
+SHOW GRANTS FOR '${DB_USER}'@'%';
