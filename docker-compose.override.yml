@@ -1,0 +1,10 @@
+# Override for development (auto-loaded by default)
+services:
+  app:
+    build:
+      target: development
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      - NODE_ENV=development
