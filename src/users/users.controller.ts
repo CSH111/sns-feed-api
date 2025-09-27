@@ -96,12 +96,17 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Get(':loginId')
-  @ApiOperation({ summary: '사용자 조회' })
-  @ApiParam({ name: 'loginId', description: '사용자 로그인 ID' })
+  @Get(':id')
+  @ApiOperation({ summary: '사용자 프로필 조회' })
+  @ApiParam({
+    name: 'id',
+    description: '사용자 ID (빈 값 허용)',
+    required: false,
+    schema: { type: 'string', example: '1' }
+  })
   @ApiResponse({
     status: 200,
-    description: '사용자 조회 성공',
+    description: '사용자 프로필 조회 성공',
     schema: {
       example: {
         id: 1,
@@ -114,6 +119,17 @@ export class UsersController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: '잘못된 ID 형식',
+    schema: {
+      example: {
+        message: "유효하지 않은 사용자 ID입니다",
+        error: "Bad Request",
+        statusCode: 400
+      }
+    }
+  })
+  @ApiResponse({
     status: 404,
     description: '사용자를 찾을 수 없음',
     schema: {
@@ -124,7 +140,7 @@ export class UsersController {
       }
     }
   })
-  async findUser(@Param('loginId') loginId: string) {
-    return this.usersService.findByLoginId(loginId);
+  async findUser(@Param('id') id: string) {
+    return this.usersService.findById(id);
   }
 }

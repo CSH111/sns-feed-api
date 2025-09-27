@@ -1,4 +1,4 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
@@ -57,9 +57,21 @@ export class UsersService {
     }
   }
 
-  async findByLoginId(loginId: string) {
-    return this.prisma.user.findUnique({
-      where: { loginId },
+  async findById(id: string) {
+    // 빈 값 체크
+    if (!id || id.trim() === '') {
+      throw new BadRequestException('사용자 ID를 입력해주세요');
+    }
+
+    // 숫자 형식 체크
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId) || numericId <= 0) {
+      throw new BadRequestException('유효하지 않은 사용자 ID입니다');
+    }
+
+    // 사용자 조회
+    const user = await this.prisma.user.findUnique({
+      where: { id: numericId },
       select: {
         id: true,
         loginId: true,
@@ -69,5 +81,12 @@ export class UsersService {
         createdAt: true,
       },
     });
+
+    // 존재하지 않는 사용자 처리
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다');
+    }
+
+    return user;
   }
 }
