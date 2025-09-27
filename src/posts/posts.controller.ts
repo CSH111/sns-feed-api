@@ -71,6 +71,14 @@ export class PostsController {
               error: 'Bad Request'
             }
           },
+          emptyContent: {
+            summary: '빈 내용',
+            value: {
+              statusCode: 400,
+              message: '게시물 내용을 입력해주세요.',
+              error: 'Bad Request'
+            }
+          },
           missingContent: {
             summary: '필수 필드 누락',
             value: {
@@ -124,7 +132,7 @@ export class PostsController {
     name: 'cursor',
     required: false,
     description: '마지막으로 조회한 게시물 ID (커서)',
-    example: 123,
+    example: 3,
   })
   @ApiQuery({
     name: 'limit',
@@ -183,6 +191,14 @@ export class PostsController {
     content: {
       'application/json': {
         examples: {
+          emptyContent: {
+            summary: '빈 내용',
+            value: {
+              statusCode: 400,
+              message: '게시물 내용을 입력해주세요.',
+              error: 'Bad Request'
+            }
+          },
           textTooLong: {
             summary: '텍스트 길이 초과',
             value: {

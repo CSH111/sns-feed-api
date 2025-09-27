@@ -1,13 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, IsArray, IsUrl, MaxLength, ArrayMaxSize, IsOptional } from 'class-validator';
+import { IsString, IsInt, IsArray, IsUrl, MaxLength, MinLength, ArrayMaxSize, IsOptional } from 'class-validator';
 
 export class CreatePostDto {
   @ApiProperty({
     description: '게시물 내용',
     example: '오늘 만든 파스타가 정말 맛있었어요! 🍝',
+    minLength: 1,
     maxLength: 280,
   })
   @IsString()
+  @MinLength(1, { message: '게시물 내용을 입력해주세요.' })
   @MaxLength(280, { message: '게시물 내용은 최대 280자까지 입력 가능합니다.' })
   content: string;
 
