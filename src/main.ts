@@ -1,9 +1,23 @@
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        const firstError = errors[0];
+        const firstMessage = Object.values(firstError.constraints as any)[0];
+        return new BadRequestException(firstMessage);
+      },
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('SNS Feed API')
