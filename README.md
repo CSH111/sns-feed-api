@@ -70,8 +70,18 @@ $ npm run docker:down // 이후 실행
 - 기기별 독립적인 Refresh Token 관리로 동시 로그인을 지원합니다.
 - PC, 모바일, 태블릿 등 여러 기기에서 개별 세션을 유지해 SNS 사용 패턴에 최적화된 인증 시스템을 구현했습니다.
 
+### 에러핸들링
+- `@nestjs/common`에서 제공하는 다양한 Exception(`NotFoundException` 등)을 활용하여 상황별 에러 응답을 구현했습니다.
+
+### 컨트롤러 및 서비스별 단위 테스트
+  ```
+  # 로컬환경
+  npm i
+  npm run test
+  ```
+
 ## 기술 스택 선정이유
 - prisma
-  - 간결하고 단순한 쿼리 메서드와 자동 타입생성으로 뛰어난 개발자 경험을 제공합니다.
+  - 간결하고 단순한 쿼리 메서드와 자동 타입생성으로 좋은 개발자 경험을 제공합니다.
 - swagger
   - OpenAPI Specification에 따라 쉽고 명확한 api문서를 작성할 수 있으며 Try it out 기능을 통해 API 테스팅이 용이합니다.
