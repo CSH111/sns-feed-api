@@ -44,6 +44,9 @@ $ npm run docker:dev
 
 # 프로덕션모드 실행시
 $ npm run docker:prod
+
+# 개발 <--> 프로덕션 변경시
+$ npm run docker:down // 이후 실행
 ```
 
 ### 4. 접속주소
