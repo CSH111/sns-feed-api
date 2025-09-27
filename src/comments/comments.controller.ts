@@ -44,12 +44,26 @@ export class CommentsController {
   @ApiResponse({
     status: 400,
     description: '잘못된 요청',
-    schema: {
-      type: 'object',
-      properties: {
-        statusCode: { type: 'number', example: 400 },
-        message: { type: 'string', example: '댓글은 최대 500자까지 입력 가능합니다.' },
-        error: { type: 'string', example: 'Bad Request' }
+    content: {
+      'application/json': {
+        examples: {
+          emptyContent: {
+            summary: '빈 댓글 내용',
+            value: {
+              statusCode: 400,
+              message: '댓글 내용을 입력해주세요.',
+              error: 'Bad Request'
+            }
+          },
+          tooLong: {
+            summary: '댓글 길이 초과',
+            value: {
+              statusCode: 400,
+              message: '댓글은 최대 500자까지 입력 가능합니다.',
+              error: 'Bad Request'
+            }
+          }
+        }
       }
     }
   })
@@ -122,6 +136,32 @@ export class CommentsController {
     status: 200,
     description: '댓글이 성공적으로 수정되었습니다.',
     type: CommentResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    content: {
+      'application/json': {
+        examples: {
+          emptyContent: {
+            summary: '빈 댓글 내용',
+            value: {
+              statusCode: 400,
+              message: '댓글 내용을 입력해주세요.',
+              error: 'Bad Request'
+            }
+          },
+          tooLong: {
+            summary: '댓글 길이 초과',
+            value: {
+              statusCode: 400,
+              message: '댓글은 최대 500자까지 입력 가능합니다.',
+              error: 'Bad Request'
+            }
+          }
+        }
+      }
+    }
   })
   @ApiResponse({
     status: 403,
