@@ -23,7 +23,7 @@ import {
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { PostResponseDto } from './dto/post-response.dto';
+import { PostResponseDto, PostDetailResponseDto } from './dto/post-response.dto';
 import { GetPostsDto, PostsWithCursorDto } from './dto/get-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -168,10 +168,10 @@ export class PostsController {
   @ApiResponse({
     status: 200,
     description: '게시물 상세 조회 성공',
-    type: PostResponseDto,
+    type: PostDetailResponseDto,
   })
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없습니다.' })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<PostResponseDto> {
+  async findOne(@Param('id', ParseIntPipe) id: number): Promise<PostDetailResponseDto> {
     return this.postsService.findOne(id);
   }
 

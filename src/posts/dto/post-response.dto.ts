@@ -30,6 +30,20 @@ export class PostCategoryDto {
   name: string;
 }
 
+export class CommentDto {
+  @ApiProperty({ description: '댓글 ID' })
+  id: number;
+
+  @ApiProperty({ description: '댓글 내용' })
+  content: string;
+
+  @ApiProperty({ description: '댓글 작성일시' })
+  createdAt: Date;
+
+  @ApiProperty({ description: '댓글 작성자 정보', type: PostAuthorDto })
+  user: PostAuthorDto;
+}
+
 export class PostResponseDto {
   @ApiProperty({ description: '게시물 ID' })
   id: number;
@@ -60,4 +74,9 @@ export class PostResponseDto {
 
   @ApiProperty({ description: '이미지 목록', type: [PostImageDto] })
   images: PostImageDto[];
+}
+
+export class PostDetailResponseDto extends PostResponseDto {
+  @ApiProperty({ description: '댓글 목록', type: [CommentDto] })
+  comments: CommentDto[];
 }
