@@ -31,8 +31,8 @@ COPY . .
 # Expose port
 EXPOSE 5656
 
-# Start in development mode with auto migration
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:dev"]
+# Start in development mode with auto migration and seed
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed && npm run start:dev"]
 
 ############# Production build stage
 FROM base AS build
@@ -81,5 +81,5 @@ EXPOSE 5656
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node dist/main.js --health-check || exit 1
 
-# Start the application with auto migration
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
+# Start the application with auto migration and seed
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed && node dist/main"]

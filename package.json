@@ -23,6 +23,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset",
+    "prisma:seed": "ts-node prisma/seed.ts",
     "docker:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.development up",
     "docker:dev:build": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env.development up --build",
     "docker:dev:i": "docker exec -it sns-api npm install",
@@ -79,6 +80,9 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "jest": {
     "moduleFileExtensions": [

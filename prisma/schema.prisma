@@ -26,6 +26,7 @@ model User {
   posts Post[]
   likes Like[]
   comments Comment[]
+  retweets Retweet[]
   follows Follow[] @relation("UserFollows")
   followers Follow[] @relation("UserFollowers")
   refreshTokens RefreshToken[]
@@ -54,18 +55,23 @@ model RefreshToken {
 model Post {
   id            Int      @id @default(autoincrement())
   userId        Int      @map("user_id")
+  categoryId    Int      @map("category_id")
   content       String   @db.Text
-  imageUrl      String?  @map("image_url") @db.VarChar(255)
   likesCount    Int      @default(0) @map("likes_count")
+  retweetsCount Int      @default(0) @map("retweets_count")
   commentsCount Int      @default(0) @map("comments_count")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category    @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  images   PostImage[]
   likes    Like[]
   comments Comment[]
+  retweets Retweet[]
 
   @@index([userId])
+  @@index([categoryId])
   @@index([createdAt])
   @@map("posts")
 }
@@ -113,4 +119,39 @@ model Follow {
   @@index([followerId])
   @@index([followingId])
   @@map("follows")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(50)
+
+  posts Post[]
+
+  @@map("categories")
+}
+
+model PostImage {
+  id     Int    @id @default(autoincrement())
+  postId Int    @map("post_id")
+  url    String @db.VarChar(500)
+  order  Int    // 이미지 순서 (1-4)
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("post_images")
+}
+
+model Retweet {
+  id     Int      @id @default(autoincrement())
+  userId Int      @map("user_id")
+  postId Int      @map("post_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([postId])
+  @@map("retweets")
 }
