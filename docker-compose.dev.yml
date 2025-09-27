@@ -1,10 +1,64 @@
-# Override for development (auto-loaded by default)
 services:
+  # Application service for development
   app:
+    container_name: sns-api
+    image: sns-feed-api:dev
     build:
+      context: .
+      dockerfile: Dockerfile
       target: development
+    env_file:
+      - .env.development
+    environment:
+      - DATABASE_URL=mysql://${DB_USER}:${DB_PASSWORD}@mysql:${DB_PORT}/${DB_NAME}
+      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-false}
+      - WATCHPACK_POLLING=${WATCHPACK_POLLING:-false}
+    ports:
+      - "${APP_PORT:-5656}:${APP_PORT:-5656}"
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - sns-network
+    restart: unless-stopped
+
+  # MySQL Database service
+  mysql:
+    container_name: sns-mysql
+    image: mysql:8.0
+    ports:
+      - "${DB_PORT:-3309}:${DB_PORT:-3309}"
     environment:
-      - NODE_ENV=development
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_TCP_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    command: >
+      bash -c "
+      sed 's/\$${DB_USER}/'\"$$DB_USER\"'/g; s/\$${DB_PASSWORD}/'\"$$DB_PASSWORD\"'/g' /docker-entrypoint-initdb.d/init.sql.template > /docker-entrypoint-initdb.d/init.sql &&
+      docker-entrypoint.sh mysqld --port=${DB_PORT} --init-file=/docker-entrypoint-initdb.d/init.sql
+      "
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - sns-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${DB_USER}", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  sns-network:
+    driver: bridge

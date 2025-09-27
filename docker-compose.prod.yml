@@ -1,23 +1,19 @@
 services:
-  # Application service
+  # Application service for production
   app:
     container_name: sns-api
-    image: sns-feed-api:${BUILD_TARGET:-dev}
+    image: sns-feed-api:production
     build:
       context: .
       dockerfile: Dockerfile
-      target: ${BUILD_TARGET:-development}
+      target: production
     env_file:
-      - .env.${BUILD_TARGET:-development}
+      - .env.production
     environment:
       - DATABASE_URL=mysql://${DB_USER}:${DB_PASSWORD}@mysql:${DB_PORT}/${DB_NAME}
-      - CHOKIDAR_USEPOLLING=${CHOKIDAR_USEPOLLING:-false}
-      - WATCHPACK_POLLING=${WATCHPACK_POLLING:-false}
     ports:
       - "${APP_PORT:-5656}:${APP_PORT:-5656}"
-    volumes:
-      - .:/usr/src/app
-      - /usr/src/app/node_modules
+    # No volumes mount for production - use built image
     depends_on:
       mysql:
         condition: service_healthy
@@ -54,7 +50,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-
 
 volumes:
   mysql_data:

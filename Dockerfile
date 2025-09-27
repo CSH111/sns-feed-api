@@ -81,5 +81,5 @@ EXPOSE 5656
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node dist/src/main.js --health-check || exit 1
 
-# Start the application with auto migration and seed
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed && npm run start:prod"]
+# Start the application with auto migration and seed (using compiled JS)
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run prisma:seed:prod && npm run start:prod"]
