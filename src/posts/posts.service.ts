@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 import { GetPostsDto, PostsWithCursorDto } from './dto/get-posts.dto';
 
@@ -181,5 +182,91 @@ export class PostsService {
     }
 
     return post as PostResponseDto;
+  }
+
+  async update(id: number, userId: number, updatePostDto: UpdatePostDto): Promise<PostResponseDto> {
+    const { content, categoryId } = updatePostDto;
+
+    // 게시물 존재 및 권한 확인
+    const existingPost = await this.prisma.post.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!existingPost) {
+      throw new NotFoundException('게시물을 찾을 수 없습니다.');
+    }
+
+    if (existingPost.userId !== userId) {
+      throw new ForbiddenException('게시물을 수정할 권한이 없습니다.');
+    }
+
+    // 카테고리 변경 시 존재 확인
+    if (categoryId) {
+      const category = await this.prisma.category.findUnique({
+        where: { id: categoryId },
+      });
+
+      if (!category) {
+        throw new NotFoundException('존재하지 않는 카테고리입니다.');
+      }
+    }
+
+    // 게시물 수정
+    const updatedPost = await this.prisma.post.update({
+      where: { id },
+      data: {
+        content,
+        ...(categoryId && { categoryId }),
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            nickname: true,
+            profileImageUrl: true,
+          },
+        },
+        category: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        images: {
+          orderBy: { order: 'asc' },
+          select: {
+            id: true,
+            url: true,
+            order: true,
+          },
+        },
+      },
+    });
+
+    return updatedPost as PostResponseDto;
+  }
+
+  async remove(id: number, userId: number): Promise<{ message: string }> {
+    // 게시물 존재 및 권한 확인
+    const existingPost = await this.prisma.post.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!existingPost) {
+      throw new NotFoundException('게시물을 찾을 수 없습니다.');
+    }
+
+    if (existingPost.userId !== userId) {
+      throw new ForbiddenException('게시물을 삭제할 권한이 없습니다.');
+    }
+
+    // 게시물 삭제 (관련 이미지, 좋아요, 댓글 등은 Cascade로 자동 삭제)
+    await this.prisma.post.delete({
+      where: { id },
+    });
+
+    return { message: '게시물이 성공적으로 삭제되었습니다.' };
   }
 }

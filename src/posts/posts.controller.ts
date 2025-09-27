@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Post,
+  Put,
+  Delete,
   Body,
   Param,
   Query,
@@ -20,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/post-response.dto';
 import { GetPostsDto, PostsWithCursorDto } from './dto/get-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -162,5 +165,138 @@ export class PostsController {
   @ApiResponse({ status: 404, description: '게시물을 찾을 수 없습니다.' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<PostResponseDto> {
     return this.postsService.findOne(id);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '게시물 수정 (텍스트만)' })
+  @ApiParam({ name: 'id', description: '게시물 ID' })
+  @ApiResponse({
+    status: 200,
+    description: '게시물이 성공적으로 수정되었습니다.',
+    type: PostResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    content: {
+      'application/json': {
+        examples: {
+          textTooLong: {
+            summary: '텍스트 길이 초과',
+            value: {
+              statusCode: 400,
+              message: '게시물 내용은 최대 280자까지 입력 가능합니다.',
+              error: 'Bad Request'
+            }
+          },
+          invalidCategoryId: {
+            summary: '존재하지 않는 카테고리',
+            value: {
+              statusCode: 400,
+              message: '존재하지 않는 카테고리입니다.',
+              error: 'Bad Request'
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: '인증되지 않은 사용자',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 401 },
+        message: { type: 'string', example: 'Unauthorized' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 403,
+    description: '권한 없음',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: '게시물을 수정할 권한이 없습니다.' },
+        error: { type: 'string', example: 'Forbidden' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: '게시물을 찾을 수 없음',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { type: 'string', example: '게시물을 찾을 수 없습니다.' },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Request() req,
+    @Body() updatePostDto: UpdatePostDto,
+  ): Promise<PostResponseDto> {
+    return this.postsService.update(id, req.user.id, updatePostDto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: '게시물 삭제' })
+  @ApiParam({ name: 'id', description: '게시물 ID' })
+  @ApiResponse({
+    status: 200,
+    description: '게시물이 성공적으로 삭제되었습니다.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: '게시물이 성공적으로 삭제되었습니다.' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 401,
+    description: '인증되지 않은 사용자',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 401 },
+        message: { type: 'string', example: 'Unauthorized' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 403,
+    description: '권한 없음',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 403 },
+        message: { type: 'string', example: '게시물을 삭제할 권한이 없습니다.' },
+        error: { type: 'string', example: 'Forbidden' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 404,
+    description: '게시물을 찾을 수 없음',
+    schema: {
+      type: 'object',
+      properties: {
+        statusCode: { type: 'number', example: 404 },
+        message: { type: 'string', example: '게시물을 찾을 수 없습니다.' },
+        error: { type: 'string', example: 'Not Found' }
+      }
+    }
+  })
+  async remove(@Param('id', ParseIntPipe) id: number, @Request() req): Promise<{ message: string }> {
+    return this.postsService.remove(id, req.user.id);
   }
 }
