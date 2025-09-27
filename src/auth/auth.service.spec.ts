@@ -29,6 +29,7 @@ describe('AuthService', () => {
     refreshToken: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       deleteMany: jest.fn(),
@@ -80,9 +81,9 @@ describe('AuthService', () => {
     configService = module.get<ConfigService>(ConfigService);
 
     // Default mock implementations
-    mockConfigService.get.mockReturnValue('15m');
+    mockConfigService.get.mockReturnValue('30m');
     mockJwtService.sign.mockReturnValue('mock-access-token');
-    mockRandomBytes.mockReturnValue(Buffer.from('mock-refresh-token'));
+    mockRandomBytes.mockReturnValue(Buffer.from('mock-refresh-token') as any);
   });
 
   afterEach(() => {
@@ -279,9 +280,11 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     const refreshToken = 'valid-refresh-token';
+    const mockToken = { id: 1, token: refreshToken, expiresAt: new Date(Date.now() + 86400000) };
 
     it('로그아웃에 성공해야 한다', async () => {
-      mockPrismaService.refreshToken.deleteMany.mockResolvedValue({ count: 1 });
+      mockPrismaService.refreshToken.findFirst.mockResolvedValue(mockToken);
+      mockPrismaService.refreshToken.delete.mockResolvedValue(mockToken);
 
       const result = await service.logout(refreshToken);
 
@@ -289,18 +292,32 @@ describe('AuthService', () => {
         message: '로그아웃되었습니다',
       });
 
-      expect(mockPrismaService.refreshToken.deleteMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.refreshToken.findFirst).toHaveBeenCalledWith({
         where: { token: refreshToken },
+      });
+      expect(mockPrismaService.refreshToken.delete).toHaveBeenCalledWith({
+        where: { id: mockToken.id },
       });
     });
 
-    it('존재하지 않는 토큰으로도 로그아웃이 가능해야 한다', async () => {
-      mockPrismaService.refreshToken.deleteMany.mockResolvedValue({ count: 0 });
+    it('존재하지 않는 토큰으로 로그아웃 시 에러를 던져야 한다', async () => {
+      mockPrismaService.refreshToken.findFirst.mockResolvedValue(null);
 
-      const result = await service.logout('invalid-token');
+      await expect(service.logout('invalid-token')).rejects.toThrow('유효하지 않은 리프레시 토큰입니다');
+    });
 
-      expect(result).toEqual({
-        message: '로그아웃되었습니다',
+    it('빈 토큰으로 로그아웃 시 에러를 던져야 한다', async () => {
+      await expect(service.logout('')).rejects.toThrow('리프레시 토큰이 필요합니다');
+    });
+
+    it('만료된 토큰으로 로그아웃 시 에러를 던져야 한다', async () => {
+      const expiredToken = { ...mockToken, expiresAt: new Date(Date.now() - 86400000) };
+      mockPrismaService.refreshToken.findFirst.mockResolvedValue(expiredToken);
+      mockPrismaService.refreshToken.delete.mockResolvedValue(expiredToken);
+
+      await expect(service.logout(refreshToken)).rejects.toThrow('만료된 리프레시 토큰입니다');
+      expect(mockPrismaService.refreshToken.delete).toHaveBeenCalledWith({
+        where: { id: expiredToken.id },
       });
     });
   });

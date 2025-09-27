@@ -10,7 +10,7 @@ describe('UsersController', () => {
 
   const mockUsersService = {
     create: jest.fn(),
-    findByLoginId: jest.fn(),
+    findById: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -34,7 +34,7 @@ describe('UsersController', () => {
 
   describe('register', () => {
     const createUserDto: CreateUserDto = {
-      loginId: 'testuser',
+      userId: 'testuser',
       name: '테스트유저',
       nickname: 'testnick',
       password: 'password123!',
@@ -44,7 +44,7 @@ describe('UsersController', () => {
     it('회원가입에 성공해야 한다', async () => {
       const expectedResult = {
         id: 1,
-        loginId: createUserDto.loginId,
+        userId: createUserDto.userId,
         name: createUserDto.name,
         nickname: createUserDto.nickname,
         profileImageUrl: createUserDto.profileImageUrl,
@@ -88,7 +88,7 @@ describe('UsersController', () => {
 
       const expectedResult = {
         id: 1,
-        loginId: dtoWithoutImage.loginId,
+        userId: dtoWithoutImage.userId,
         name: dtoWithoutImage.name,
         nickname: dtoWithoutImage.nickname,
         profileImageUrl: null,
@@ -114,7 +114,7 @@ describe('UsersController', () => {
 
     it('모든 필수 필드가 올바르게 전달되어야 한다', async () => {
       const completeDto: CreateUserDto = {
-        loginId: 'user123',
+        userId: 'user123',
         name: '김철수',
         nickname: 'nickname',
         password: 'password123!',
@@ -130,71 +130,75 @@ describe('UsersController', () => {
   });
 
   describe('findUser', () => {
-    const loginId = 'testuser';
+    const userId = '1';
 
     it('사용자 조회에 성공해야 한다', async () => {
       const expectedResult = {
         id: 1,
-        loginId,
+        userId,
         name: '테스트유저',
         nickname: 'testnick',
         profileImageUrl: 'https://example.com/profile.jpg',
         createdAt: new Date(),
       };
 
-      mockUsersService.findByLoginId.mockResolvedValue(expectedResult);
+      mockUsersService.findById.mockResolvedValue(expectedResult);
 
-      const result = await controller.findUser(loginId);
+      const result = await controller.findUser(userId);
 
       expect(result).toEqual(expectedResult);
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(loginId);
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledTimes(1);
+      expect(mockUsersService.findById).toHaveBeenCalledWith(userId);
+      expect(mockUsersService.findById).toHaveBeenCalledTimes(1);
     });
 
-    it('존재하지 않는 사용자 조회 시 null을 반환해야 한다', async () => {
-      mockUsersService.findByLoginId.mockResolvedValue(null);
+    it('존재하지 않는 사용자 조회 시 에러를 던져야 한다', async () => {
+      mockUsersService.findById.mockRejectedValue(new Error('사용자를 찾을 수 없습니다'));
 
-      const result = await controller.findUser(loginId);
-
-      expect(result).toBeNull();
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(loginId);
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledTimes(1);
+      await expect(controller.findUser('999')).rejects.toThrow('사용자를 찾을 수 없습니다');
+      expect(mockUsersService.findById).toHaveBeenCalledWith('999');
     });
 
-    it('loginId 파라미터가 올바르게 전달되어야 한다', async () => {
-      const differentLoginId = 'anotheruser';
-      mockUsersService.findByLoginId.mockResolvedValue(null);
+    it('userId 파라미터가 올바르게 전달되어야 한다', async () => {
+      const differentUserId = '2';
+      const expectedResult = {
+        id: 2,
+        userId: differentUserId,
+        name: '다른유저',
+        nickname: 'othernick',
+        profileImageUrl: 'https://example.com/other.jpg',
+        createdAt: new Date(),
+      };
 
-      await controller.findUser(differentLoginId);
+      mockUsersService.findById.mockResolvedValue(expectedResult);
 
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(differentLoginId);
+      await controller.findUser(differentUserId);
+
+      expect(mockUsersService.findById).toHaveBeenCalledWith(differentUserId);
     });
 
     it('서비스에서 에러가 발생하면 에러를 전파해야 한다', async () => {
       const serviceError = new Error('서비스 에러');
-      mockUsersService.findByLoginId.mockRejectedValue(serviceError);
+      mockUsersService.findById.mockRejectedValue(serviceError);
 
-      await expect(controller.findUser(loginId)).rejects.toThrow(serviceError);
+      await expect(controller.findUser(userId)).rejects.toThrow(serviceError);
 
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(loginId);
+      expect(mockUsersService.findById).toHaveBeenCalledWith(userId);
     });
 
-    it('빈 문자열 loginId도 처리할 수 있어야 한다', async () => {
-      const emptyLoginId = '';
-      mockUsersService.findByLoginId.mockResolvedValue(null);
+    it('빈 문자열 userId로 요청 시 에러를 던져야 한다', async () => {
+      const emptyUserId = '';
+      mockUsersService.findById.mockRejectedValue(new Error('사용자 ID를 입력해주세요'));
 
-      await controller.findUser(emptyLoginId);
-
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(emptyLoginId);
+      await expect(controller.findUser(emptyUserId)).rejects.toThrow('사용자 ID를 입력해주세요');
+      expect(mockUsersService.findById).toHaveBeenCalledWith(emptyUserId);
     });
 
-    it('특수문자가 포함된 loginId도 처리할 수 있어야 한다', async () => {
-      const specialLoginId = 'user@123';
-      mockUsersService.findByLoginId.mockResolvedValue(null);
+    it('숫자가 아닌 userId로 요청 시 에러를 던져야 한다', async () => {
+      const invalidUserId = 'abc';
+      mockUsersService.findById.mockRejectedValue(new Error('유효하지 않은 사용자 ID입니다'));
 
-      await controller.findUser(specialLoginId);
-
-      expect(mockUsersService.findByLoginId).toHaveBeenCalledWith(specialLoginId);
+      await expect(controller.findUser(invalidUserId)).rejects.toThrow('유효하지 않은 사용자 ID입니다');
+      expect(mockUsersService.findById).toHaveBeenCalledWith(invalidUserId);
     });
   });
 
