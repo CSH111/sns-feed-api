@@ -39,6 +39,8 @@ $ git clone https://github.com/CSH111/sns-feed-api.git
 ### 3. 도커에서 MySQL Server 및 nest 실행
 
 ```
+$ cd sns-feed-api
+
 # 개발모드 실행시
 $ npm run docker:dev
 
