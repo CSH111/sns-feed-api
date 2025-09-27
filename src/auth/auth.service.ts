@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -124,9 +124,32 @@ export class AuthService {
   }
 
   async logout(refreshToken: string) {
-    // 리프레시 토큰 삭제
-    await this.prisma.refreshToken.deleteMany({
+    // RefreshToken 검증
+    if (!refreshToken || refreshToken.trim() === '') {
+      throw new BadRequestException('리프레시 토큰이 필요합니다');
+    }
+
+    // DB에서 RefreshToken 존재 확인
+    const existingToken = await this.prisma.refreshToken.findFirst({
       where: { token: refreshToken },
+    });
+
+    if (!existingToken) {
+      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다');
+    }
+
+    // 토큰 만료 확인
+    if (existingToken.expiresAt < new Date()) {
+      // 만료된 토큰 삭제
+      await this.prisma.refreshToken.delete({
+        where: { id: existingToken.id },
+      });
+      throw new UnauthorizedException('만료된 리프레시 토큰입니다');
+    }
+
+    // 유효한 리프레시 토큰 삭제 (로그아웃)
+    await this.prisma.refreshToken.delete({
+      where: { id: existingToken.id },
     });
 
     return { message: '로그아웃되었습니다' };

@@ -118,15 +118,49 @@ export class AuthController {
     },
   })
   @ApiResponse({
+    status: 400,
+    description: '잘못된 요청',
+    content: {
+      'application/json': {
+        examples: {
+          missingToken: {
+            summary: '리프레시 토큰 누락',
+            value: {
+              message: '리프레시 토큰이 필요합니다',
+              error: 'Bad Request',
+              statusCode: 400,
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
     status: 401,
     description: '인증 실패',
     content: {
       'application/json': {
         examples: {
-          unauthorized: {
-            summary: '인증되지 않은 사용자',
+          invalidAccessToken: {
+            summary: '유효하지 않은 액세스 토큰',
             value: {
               message: 'Unauthorized',
+              statusCode: 401,
+            },
+          },
+          invalidRefreshToken: {
+            summary: '유효하지 않은 리프레시 토큰',
+            value: {
+              message: '유효하지 않은 리프레시 토큰입니다',
+              error: 'Unauthorized',
+              statusCode: 401,
+            },
+          },
+          expiredRefreshToken: {
+            summary: '만료된 리프레시 토큰',
+            value: {
+              message: '만료된 리프레시 토큰입니다',
+              error: 'Unauthorized',
               statusCode: 401,
             },
           },
