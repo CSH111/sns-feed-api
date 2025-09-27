@@ -28,8 +28,27 @@ model User {
   comments Comment[]
   follows Follow[] @relation("UserFollows")
   followers Follow[] @relation("UserFollowers")
+  refreshTokens RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  token       String   @unique @db.VarChar(500)
+  deviceId    String?  @map("device_id") @db.VarChar(100) // 기기 식별용
+  userAgent   String?  @map("user_agent") @db.Text // 브라우저/앱 정보
+  ipAddress   String?  @map("ip_address") @db.VarChar(45) // IPv6 지원
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+  lastUsedAt  DateTime @default(now()) @map("last_used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 model Post {

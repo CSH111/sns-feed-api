@@ -24,6 +24,17 @@ async function bootstrap() {
     .setDescription('SNS Feed API Documentation')
     .setVersion('1.0')
     .addTag('sns')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
