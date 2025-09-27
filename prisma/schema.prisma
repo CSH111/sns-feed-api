@@ -27,8 +27,6 @@ model User {
   likes Like[]
   comments Comment[]
   retweets Retweet[]
-  follows Follow[] @relation("UserFollows")
-  followers Follow[] @relation("UserFollowers")
   refreshTokens RefreshToken[]
 
   @@map("users")
@@ -106,20 +104,6 @@ model Comment {
   @@map("comments")
 }
 
-model Follow {
-  id          Int      @id @default(autoincrement())
-  followerId  Int      @map("follower_id")
-  followingId Int      @map("following_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  follower  User @relation("UserFollows", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@index([followerId])
-  @@index([followingId])
-  @@map("follows")
-}
 
 model Category {
   id   Int    @id @default(autoincrement())
