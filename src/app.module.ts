@@ -7,6 +7,9 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { PostsModule } from './posts/posts.module';
+import { LikesModule } from './likes/likes.module';
+import { CommentsModule } from './comments/comments.module';
+import { RetweetsModule } from './retweets/retweets.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { PostsModule } from './posts/posts.module';
     AuthModule,
     CategoriesModule,
     PostsModule,
+    LikesModule,
+    CommentsModule,
+    RetweetsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
