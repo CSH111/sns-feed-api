@@ -12,7 +12,16 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: '로그인' })
+  @ApiOperation({
+    summary: '로그인',
+    description: `로그인 성공 후 받은 accessToken을 사용하는 방법:
+1. 응답의 accessToken 값을 복사
+2. Swagger 우측 상단 🔒 Authorize 버튼 클릭
+3. Value 필드에 accessToken 값만 입력 (Bearer 제외)
+4. 이후 모든 API 호출 시 자동으로 Authorization 헤더 추가됨
+
+⚠️ accessToken은 30분 후 만료되며, refreshToken으로 갱신 가능합니다.`
+  })
   @ApiResponse({
     status: 200,
     description: '로그인 성공',

@@ -42,7 +42,7 @@ export class AuthService {
 
     // 토큰 생성
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
+      expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '30m',
     });
 
     const refreshToken = this.generateRefreshToken();
@@ -99,7 +99,7 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '15m',
+      expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') || '30m',
     });
 
     // 새 리프레시 토큰 생성 (토큰 로테이션)

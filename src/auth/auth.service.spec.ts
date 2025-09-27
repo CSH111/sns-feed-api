@@ -130,7 +130,7 @@ describe('AuthService', () => {
       expect(mockBcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
       expect(mockJwtService.sign).toHaveBeenCalledWith(
         { sub: mockUser.id, loginId: mockUser.loginId },
-        { expiresIn: '15m' },
+        { expiresIn: '30m' },
       );
     });
 
